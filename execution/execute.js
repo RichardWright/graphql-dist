@@ -12,29 +12,7 @@ exports.resolveFieldValueOrError = resolveFieldValueOrError;
 exports.getFieldDef = getFieldDef;
 exports.defaultFieldResolver = exports.defaultTypeResolver = void 0;
 
-const performanceTest = require("perf_hooks").performance;
-const PerformanceObserver = require("perf_hooks").PerformanceObserver;
-const diagnostics_channel = require('diagnostics_channel');
-const channel = diagnostics_channel.channel('graphql');
-
-console.log('PERF OBSERVER - execute');
-/*
-const obs = new PerformanceObserver((items) => {
-
-  items.getEntries().forEach((item) => {
-    if (item.duration > 0.1) {
-      console.log('@@@ - ' + item.name, + ' ' + item.duration);
-      console.log(JSON.stringify(item));
-      // channel.publish({ name: item.name, duration: item.duration });
-    }
-  })
-})
-obs.observe({ entryTypes: ['measure'] })
-*/
-
-const test1 = "resolveFieldValueOrError";
-const test2 = "completeValueCatchingError";
-const test3 = "executeFieldsSeriallyresolveField";
+//const diagnostics_channel = require('diagnostics_channel');
 
 var _iterall = require("iterall");
 
@@ -107,29 +85,11 @@ function executeImpl(args) {
     fieldResolver = args.fieldResolver,
     typeResolver = args.typeResolver; // If arguments are missing or incorrect, throw an error.
 
-  //TODO - 
-  console.log('>>>>>>> executeImpl');
-  //console.log(args);
-
+  /*
   const name = rootValue ? Object.keys(rootValue)[0] : '';
   console.log(`rootValue: ${name}`);
   console.log(JSON.stringify(rootValue));
-
-  //console.log(schema)
-  //console.log(document)
-  //console.log(rootValue)
-  //console.log(contextValue)
-  // console.log(variableValues)
-  // console.log(operationName)
-  //console.log(`contextValue keys ${contextValue ? Object.keys(contextValue) : ''}`);
-  //console.log(`contextValue ${JSON.stringify(contextValue)}`);
-
-  //console.log(`variableValues keys ${variableValues ? Object.keys(variableValues) : ''}`);
-  //console.log(`variableValues ${JSON.stringify(variableValues)}`);
-
-  //console.log(`operationName ${operationName}`);
-  //console.log(fieldResolver)
-  //console.log(subscribeFieldResolver)
+  */
 
   assertValidExecutionArguments(schema, document, variableValues); // If a valid execution context cannot be created due to incorrect arguments,
   // a "Response" with only errors is returned.
@@ -147,7 +107,6 @@ function executeImpl(args) {
   // field and its descendants will be omitted, and sibling fields will still
   // be executed. An execution which encounters errors will still result in a
   // resolved Promise.
-
 
   var data = executeOperation(exeContext, exeContext.operation, rootValue);
   return buildResponse(exeContext, data);
@@ -255,9 +214,6 @@ function buildExecutionContext(schema, document, rootValue, contextValue, rawVar
 
 
 function executeOperation(exeContext, operation, rootValue) {
-  //TODO - cleanup
-  //console.log(`executeOperation keys: ${Object.keys(operation)}`);
-  ///console.log(`executeOperation: ${JSON.stringify(operation)}`);
   var type = (0, _getOperationRootType.getOperationRootType)(exeContext.schema, operation);
   var fields = collectFields(exeContext, type, operation.selectionSet, Object.create(null), Object.create(null));
   var path = undefined; // Errors from sub-fields of a NonNull type may propagate to the top level,
@@ -292,11 +248,11 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields
   return (0, _promiseReduce.default)(Object.keys(fields), function (results, responseName) {
     var fieldNodes = fields[responseName];
     var fieldPath = (0, _Path.addPath)(path, responseName);
-    //TODO - measure here
 
-    //performanceTest.mark(test3);
+    //const executeFieldsSeriallyresolveFieldMark = "executeFieldsSeriallyresolveField";
+    //performanceTest.mark(executeFieldsSeriallyresolveFieldMark);
     var result = resolveField(exeContext, parentType, sourceValue, fieldNodes, fieldPath);
-    //performanceTest.measure("executeFieldsSeriallyresolveField", test3);
+    //performanceTest.measure(executeFieldsSeriallyresolveFieldMark, executeFieldsSeriallyresolveFieldMark);
 
     if (result === undefined) {
       return results;
@@ -313,12 +269,11 @@ function executeFieldsSerially(exeContext, parentType, sourceValue, path, fields
     return results;
   }, Object.create(null));
 }
+
 /**
  * Implements the "Evaluating selection sets" section of the spec
  * for "read" mode.
  */
-
-
 function executeFields(exeContext, parentType, sourceValue, path, fields) {
   var results = Object.create(null);
   var containsPromise = false;
@@ -482,35 +437,26 @@ function resolveField(exeContext, parentType, source, fieldNodes, path) {
     return;
   }
 
-  //console.log(`fieldName: ${fieldName}`);
-
   var resolveFn = fieldDef.resolve || exeContext.fieldResolver;
   var info = buildResolveInfo(exeContext, fieldDef, fieldNodes, parentType, path);
   // Get the resolve function, regardless of if its result is normal
   // or abrupt (error).
 
-  //TODO - clean up
   /*
-  console.log(fieldName);
-  const newTest = test1 + fieldName;
-
-  performanceTest.mark(newTest);
-    */
+  const resolveFieldValueOrErrorMark = "resolveFieldValueOrError" + fieldName;
+  performanceTest.mark(resolveFieldValueOrErrorMark);
+  */
   var result = resolveFieldValueOrError(exeContext, fieldDef, fieldNodes, resolveFn, source, info);
   /*
-  performanceTest.measure(newTest, newTest);
+  performanceTest.measure(resolveFieldValueOrErrorMark, resolveFieldValueOrErrorMark);
   */
 
-  //console.log('TEST 1');
+  //const completeValueCatchingErrorMark = "completeValueCatchingError" + fieldName;
+  //performanceTest.mark(completeValueCatchingErrorMark);
+  //const completeValueCatchingErrorResult = completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
+  //performanceTest.measure(completeValueCatchingErrorMark, completeValueCatchingErrorMark);
 
-  //performanceTest.mark(test2);
-  //const result1 = completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
-  //performanceTest.measure("completeValueCatchingError", test2);
-
-
-  //console.log('TEST 2');
-
-  //return result1;
+  //return completeValueCatchingErrorResult;
 
   return completeValueCatchingError(exeContext, fieldDef.type, fieldNodes, info, path, result);
 }
