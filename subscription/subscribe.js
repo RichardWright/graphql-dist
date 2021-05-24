@@ -7,16 +7,6 @@ exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
 const performanceTest = require("perf_hooks").performance;
-//const PerformanceObserver = require("perf_hooks").PerformanceObserver;
-//const diagnostics_channel = require('diagnostics_channel');
-//const channel = diagnostics_channel.channel('apollo-server-core');
-
-const subscriptionExecute = "subcriptionExecute";
-/*
-performanceTest.mark(test1);
-const request = parseGraphQLRequest(httpRequest.request, requestPayload);
-performanceTest.measure("parseGraphQLRequest", test1);
-*/
 
 var _iterall = require("iterall");
 
@@ -67,8 +57,6 @@ function reportGraphQLError(error) {
   throw error;
 }
 
-//TODO 
-//what is this?
 function subscribeImpl(args) {
   var schema = args.schema,
     document = args.document,
@@ -87,17 +75,15 @@ function subscribeImpl(args) {
   // "ExecuteQuery" algorithm, for which `execute` is also used.
 
 
-  console.log('>>>>>>> subscribeImpl');
+  //console.log('>>>>>>> subscribeImpl');
 
   var mapSourceToResponse = function mapSourceToResponse(payload) {
-    //TODO - measure here
-
     const subscriptionExecuteTest = `subscriptionExecute-${operationName ? operationName : 'no.operation.name'}`;
     performanceTest.mark(subscriptionExecuteTest);
-    const test = (0, _execute.execute)(schema, document, payload, contextValue, variableValues, operationName, fieldResolver);
+    const executeOutput = (0, _execute.execute)(schema, document, payload, contextValue, variableValues, operationName, fieldResolver);
     performanceTest.measure(subscriptionExecuteTest, subscriptionExecuteTest);
 
-    return test;
+    return executeOutput;
   }; // Resolve the Source Stream, then map every source value to a
   // ExecutionResult value as described above.
 
@@ -175,7 +161,6 @@ function createSourceEventStream(schema, document, rootValue, contextValue, vari
     // algorithm from GraphQL specification. It differs from
     // "ResolveFieldValue" due to providing a different `resolveFn`.
 
-    //TODO - MEASURE HERE
     var result = (0, _execute.resolveFieldValueOrError)(exeContext, fieldDef, fieldNodes, resolveFn, rootValue, info); // Coerce to Promise for easier error handling and consistent return type.
 
     return Promise.resolve(result).then(function (eventStream) {
