@@ -30,6 +30,11 @@ const obs = new PerformanceObserver((items) => {
 console.log('STARTNG OBSERVATION')
 obs.observe({ entryTypes: ['measure'] })
 
+function clearMarks(perf) {
+  if (perf.getEntries().length > 10) {
+    perf.clearMarks();
+  }
+}
 
 var _iterall = require("iterall");
 
@@ -105,6 +110,8 @@ function subscribeImpl(args) {
     performanceTest.mark(subscriptionExecuteTest);
     const executeOutput = (0, _execute.execute)(schema, document, payload, contextValue, variableValues, operationName, fieldResolver);
     performanceTest.measure(subscriptionExecuteTest, subscriptionExecuteTest);
+
+    clearMarks(performanceTest);
 
     return executeOutput;
   }; // Resolve the Source Stream, then map every source value to a
