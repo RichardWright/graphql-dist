@@ -27,7 +27,6 @@ const obs = new PerformanceObserver((items) => {
   })
 })
 
-console.log('STARTNG OBSERVATION')
 obs.observe({ entryTypes: ['measure'] })
 
 function clearMarks(perf) {
