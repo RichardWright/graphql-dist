@@ -6,7 +6,30 @@ Object.defineProperty(exports, "__esModule", {
 exports.subscribe = subscribe;
 exports.createSourceEventStream = createSourceEventStream;
 
+
+// perf hook - RW
 const performanceTest = require("perf_hooks").performance;
+const PerformanceObserver = require("perf_hooks").PerformanceObserver;
+const diagnostics_channel = require('diagnostics_channel');
+const channel = diagnostics_channel.channel('graphql');
+
+const obs = new PerformanceObserver((items) => {
+  items.getEntries().forEach((item) => {
+    const parts = item.name.split('-');
+    const functionName = parts[0];
+    const operationName = parts[1];
+    channel.publish({
+      name: item.name,
+      functionName: functionName,
+      operationName: operationName,
+      duration: item.duration
+    });
+  })
+})
+
+console.log('STARTNG OBSERVATION')
+obs.observe({ entryTypes: ['measure'] })
+
 
 var _iterall = require("iterall");
 
